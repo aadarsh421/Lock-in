@@ -199,8 +199,6 @@ drink water, and get back to your task.
 </main>
 
 
-<!-- Emergency / Reset Modal -->
-
 <div id="modal">
 
 <div class="modalbox">
@@ -232,9 +230,9 @@ CLOSE
 
 <script>
 
-/* --------------------------------
-   BASIC HELPERS
--------------------------------- */
+/* ================================
+   HELPERS
+================================ */
 
 const $ = id => document.getElementById(id);
 
@@ -247,9 +245,9 @@ function getStreak(){
 }
 
 
-/* --------------------------------
-   9 AM - 6 PM TIMER
--------------------------------- */
+/* ================================
+   9 AM → 6 PM TIMER
+================================ */
 
 function tick(){
 
@@ -269,9 +267,7 @@ function tick(){
     $('timer').textContent =
       'Not started';
 
-  }
-
-  else if(now < end){
+  }else if(now < end){
 
     let seconds =
       Math.floor((end-now)/1000);
@@ -294,13 +290,9 @@ function tick(){
         hours,
         minutes,
         seconds
-      ]
-      .map(v=>String(v).padStart(2,'0'))
-      .join(':');
+      ].map(v=>String(v).padStart(2,'0')).join(':');
 
-  }
-
-  else{
+  }else{
 
     $('status').textContent =
       '✅ MISSION COMPLETE';
@@ -316,14 +308,14 @@ function tick(){
     `Current streak: ${s} day${s===1?'':'s'}`;
 }
 
-setInterval(tick,1000);
-
 tick();
 
+setInterval(tick,1000);
 
-/* --------------------------------
-   INSTALL PWA
--------------------------------- */
+
+/* ================================
+   PWA INSTALL
+================================ */
 
 let deferredPrompt = null;
 
@@ -356,63 +348,64 @@ $('install').onclick = async () => {
 };
 
 
-/* --------------------------------
+/* ================================
    EMERGENCY BUTTON
    SPEECH + VIBRATION
--------------------------------- */
+================================ */
 
-$('urge').onclick = () => {
+$('urge').onclick = function(){
 
   const message =
     "Mat kar masturbation, madarchod. Ten minute ruk. Tu control mein hai.";
 
-  /* SPEAK */
+  /*
+    SPEECH
+    This is called directly from the
+    button click so Chrome treats it
+    as a user interaction.
+  */
 
-  if('speechSynthesis' in window){
+  if(
+    'speechSynthesis' in window &&
+    'SpeechSynthesisUtterance' in window
+  ){
 
-    try{
+    window.speechSynthesis.cancel();
 
-      speechSynthesis.cancel();
+    const voice =
+      new SpeechSynthesisUtterance(message);
 
-      const voice =
-        new SpeechSynthesisUtterance(message);
+    voice.rate = 0.9;
+    voice.pitch = 1;
+    voice.volume = 1;
 
-      voice.rate = 0.9;
-      voice.pitch = 1;
-      voice.volume = 1;
-
-      speechSynthesis.speak(voice);
-
-    }catch(error){
-
-      console.log(
-        'Speech unavailable:',
-        error
-      );
-
-    }
+    window.speechSynthesis.speak(voice);
 
   }
 
 
-  /* VIBRATION */
+  /*
+    VIBRATION
+  */
 
-  if('vibrate' in navigator){
+  if(
+    'vibrate' in navigator
+  ){
 
     try{
 
       navigator.vibrate([
-        400,
+        500,
         150,
-        400,
+        500,
         150,
-        800
+        1000
       ]);
 
     }catch(error){
 
       console.log(
-        'Vibration unavailable:',
+        'Vibration unavailable',
         error
       );
 
@@ -421,7 +414,9 @@ $('urge').onclick = () => {
   }
 
 
-  /* OPEN RESET */
+  /*
+    OPEN RESET WINDOW
+  */
 
   $('modal').style.display =
     'flex';
@@ -438,31 +433,33 @@ $('urge').onclick = () => {
 };
 
 
-/* --------------------------------
+/* ================================
    CLOSE RESET
--------------------------------- */
+================================ */
 
-$('close').onclick = () => {
+$('close').onclick = function(){
 
   $('modal').style.display =
     'none';
 
-  if('speechSynthesis' in window){
+  if(
+    'speechSynthesis' in window
+  ){
 
-    speechSynthesis.cancel();
+    window.speechSynthesis.cancel();
 
   }
 
 };
 
 
-/* --------------------------------
-   10 MINUTE RESET
--------------------------------- */
+/* ================================
+   10 MINUTE RESET TIMER
+================================ */
 
 let interval = null;
 
-$('start').onclick = () => {
+$('start').onclick = function(){
 
   $('start').disabled =
     true;
@@ -471,7 +468,7 @@ $('start').onclick = () => {
 
   clearInterval(interval);
 
-  interval = setInterval(() => {
+  interval = setInterval(function(){
 
     left--;
 
@@ -495,7 +492,12 @@ $('start').onclick = () => {
       $('angry').textContent =
         '✅ YOU BEAT THE URGE';
 
-      if('vibrate' in navigator){
+
+      /* VICTORY VIBRATION */
+
+      if(
+        'vibrate' in navigator
+      ){
 
         try{
 
@@ -509,11 +511,16 @@ $('start').onclick = () => {
 
       }
 
-      if('speechSynthesis' in window){
+
+      /* VICTORY SPEECH */
+
+      if(
+        'speechSynthesis' in window
+      ){
 
         try{
 
-          speechSynthesis.cancel();
+          window.speechSynthesis.cancel();
 
           const done =
             new SpeechSynthesisUtterance(
@@ -521,8 +528,9 @@ $('start').onclick = () => {
             );
 
           done.rate = 0.9;
+          done.volume = 1;
 
-          speechSynthesis.speak(done);
+          window.speechSynthesis.speak(done);
 
         }catch(error){}
 
@@ -535,11 +543,11 @@ $('start').onclick = () => {
 };
 
 
-/* --------------------------------
+/* ================================
    COMPLETE TODAY
--------------------------------- */
+================================ */
 
-$('complete').onclick = () => {
+$('complete').onclick = function(){
 
   const current =
     today();
@@ -601,23 +609,28 @@ $('complete').onclick = () => {
 };
 
 
-/* --------------------------------
-   OFFLINE SUPPORT
--------------------------------- */
+/* ================================
+   SERVICE WORKER
+================================ */
 
-if('serviceWorker' in navigator){
+if(
+  'serviceWorker' in navigator
+){
 
   window.addEventListener(
     'load',
-    () => {
+    function(){
 
       navigator.serviceWorker
-        .register('sw.js')
-        .catch(error =>
-          console.log(
-            'Service worker error:',
-            error
-          )
+        .register(
+          'sw.js'
+        )
+        .catch(
+          error =>
+            console.log(
+              'Service worker error:',
+              error
+            )
         );
 
     }
