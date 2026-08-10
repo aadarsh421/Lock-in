@@ -353,105 +353,39 @@ $('install').onclick = async () => {
    SPEECH + VIBRATION
 ================================ */
 
-$('urge').onclick = function(){
+<button
+  id="urge"
+  onclick="speakTest()"
+  style="font-size:22px;padding:25px;width:100%;">
+  🚨 TEST VOICE 🚨
+</button>
 
-  const message =
-    "Mat kar masturbation, madarchod. Ten minute ruk. Tu control mein hai.";
+<script>
+function speakTest() {
+  const SpeechUtterance =
+    window.SpeechSynthesisUtterance;
 
-  /*
-    SPEECH
-    This is called directly from the
-    button click so Chrome treats it
-    as a user interaction.
-  */
-
-  if(
-    'speechSynthesis' in window &&
-    'SpeechSynthesisUtterance' in window
-  ){
-
-    window.speechSynthesis.cancel();
-
-    const voice =
-      new SpeechSynthesisUtterance(message);
-
-    voice.rate = 0.9;
-    voice.pitch = 1;
-    voice.volume = 1;
-
-    window.speechSynthesis.speak(voice);
-
+  if (!SpeechUtterance) {
+    alert("Speech synthesis is not available in this page.");
+    return;
   }
 
+  const text = new SpeechUtterance(
+    "Mat kar masturbation, madarchod. Ten minute ruk. Tu control mein hai."
+  );
 
-  /*
-    VIBRATION
-  */
+  text.volume = 1;
+  text.rate = 0.9;
+  text.pitch = 1;
 
-  if(
-    'vibrate' in navigator
-  ){
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(text);
 
-    try{
-
-      navigator.vibrate([
-        500,
-        150,
-        500,
-        150,
-        1000
-      ]);
-
-    }catch(error){
-
-      console.log(
-        'Vibration unavailable',
-        error
-      );
-
-    }
-
+  if (navigator.vibrate) {
+    navigator.vibrate([500,150,500,150,1000]);
   }
-
-
-  /*
-    OPEN RESET WINDOW
-  */
-
-  $('modal').style.display =
-    'flex';
-
-  $('reset').textContent =
-    '10:00';
-
-  $('start').disabled =
-    false;
-
-  $('angry').textContent =
-    'MAT KAR MASTURBATION, MADARCHOD 😂';
-
-};
-
-
-/* ================================
-   CLOSE RESET
-================================ */
-
-$('close').onclick = function(){
-
-  $('modal').style.display =
-    'none';
-
-  if(
-    'speechSynthesis' in window
-  ){
-
-    window.speechSynthesis.cancel();
-
-  }
-
-};
-
+}
+</script>
 
 /* ================================
    10 MINUTE RESET TIMER
