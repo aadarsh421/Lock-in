@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
+<title>9–6 Lock-In</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f7f7f7;color:#111;font-family:system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+main{max-width:520px;margin:auto;padding:28px 20px 35px;text-align:center}
+h1{font-size:32px;margin:12px 0 5px}.sub{color:#666;margin:0 0 25px}
+.card{background:#fff;border-radius:22px;padding:24px;box-shadow:0 5px 24px #00000012;margin-bottom:16px}
+.status{font-size:20px;font-weight:700}.timer{font-size:48px;font-variant-numeric:tabular-nums;margin:8px 0 12px;font-weight:800}
+.streak{font-size:17px}.urge{width:100%;border:0;border-radius:18px;padding:20px 12px;font-size:21px;font-weight:900;background:#111;color:#fff;box-shadow:0 5px 0 #aaa;cursor:pointer}
+button:active{transform:translateY(3px);box-shadow:none}.complete{width:100%;border:0;border-radius:14px;padding:14px;margin-top:12px;font-size:16px;font-weight:700;background:#e9e9e9;color:#111}
+.note{font-size:15px;color:#555;line-height:1.45;margin-top:20px}.install{display:none;margin-top:12px;width:100%;padding:13px;border:1px solid #ccc;border-radius:12px;background:#fff}
+#modal{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;padding:20px}
+.modalbox{background:#fff;border-radius:24px;padding:28px;max-width:420px;width:100%;text-align:center}
+.angry{font-size:29px;font-weight:950;line-height:1.15}.reset{font-size:54px;font-weight:900;margin:12px}
+.modalbox button{border:0;border-radius:13px;padding:14px 18px;font-weight:800;margin:5px;cursor:pointer}
+.start{background:#111;color:#fff}.close{background:#eee}
+</style>
+</head>
+<body>
+<main>
+<h1>9–6 LOCK-IN 🔒</h1><p class="sub">Your only job: stay in control from 9 AM to 6 PM.</p>
+<section class="card">
+<div id="status" class="status"></div><div id="timer" class="timer"></div><div id="streak" class="streak"></div>
+</section>
+<button id="urge" class="urge">🚨 MAT KAR, MADARCHOD 🚨</button>
+<button id="complete" class="complete">✓ I MADE IT TO 6 PM</button>
+<button id="install" class="install">📲 Add 9–6 Lock-In to Home Screen</button>
+<p class="note">An urge is a wave. You don't have to act on it. Delay 10 minutes, change your environment, walk around, drink water, and get back to your task.</p>
+</main>
+
+<div id="modal"><div class="modalbox">
+<div class="angry">MAT KAR MASTURBATION, MADARCHOD 😂</div>
+<p>10 minute ruk. Tu control mein hai. 🔥</p>
+<div id="reset" class="reset">10:00</div>
+<button id="start" class="start">START 10 MIN</button><button id="close" class="close">CLOSE</button>
+</div></div>
+
+<script>
+const $=id=>document.getElementById(id);
+function today(){return new Date().toISOString().slice(0,10)}
+function streak(){return Number(localStorage.getItem('streak')||0)}
+function tick(){
+ const n=new Date(), a=new Date(n);a.setHours(9,0,0,0),z=new Date(n);z.setHours(18,0,0,0);
+ let s;
+ if(n<a){$('status').textContent='⏳ Mission starts at 9:00 AM';$('timer').textContent='Not started'}
+ else if(n<z){let x=Math.floor((z-n)/1000);$('status').textContent='🔥 MISSION ACTIVE';$('timer').textContent=[Math.floor(x/3600),Math.floor(x%3600/60),x%60].map(v=>String(v).padStart(2,'0')).join(':')}
+ else{$('status').textContent='✅ MISSION COMPLETE';$('timer').textContent='9 AM → 6 PM'}
+ $('streak').textContent=`Current streak: ${streak()} day${streak()==1?'':'s'}`;
+}
+setInterval(tick,1000);tick();
+
+let deferred;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;$('install').style.display='block'});
+$('install').onclick=async()=>{if(deferred){deferred.prompt();deferred=null;$('install').style.display='none'}};
+
+$('urge').onclick=()=>{
+ if(navigator.vibrate) navigator.vibrate([250,100,250,100,500]);
+ $('modal').style.display='flex'; $('reset').textContent='10:00'; $('start').disabled=false;
+};
+$('close').onclick=()=>{$('modal').style.display='none'};
+let interval;
+$('start').onclick=()=>{
+ $('start').disabled=true;let left=600;
+ clearInterval(interval);
+ interval=setInterval(()=>{
+  left--; $('reset').textContent=`${String(Math.floor(left/60)).padStart(2,'0')}:${String(left%60).padStart(2,'0')}`;
+  if(left<=0){clearInterval(interval);$('reset').textContent='DONE';document.querySelector('.angry').textContent='✅ YOU BEAT THE URGE';if(navigator.vibrate)navigator.vibrate([400,100,400])}
+ },1000);
+};
+$('complete').onclick=()=>{
+ const t=today(),last=localStorage.getItem('last');
+ if(t===last){alert('Already counted today. Keep going!');return}
+ let s=streak();
+ if(last){let d=new Date(last), now=new Date();let diff=Math.round((new Date(t)-new Date(last))/(86400000));if(diff!==1)s=0}
+ localStorage.setItem('last',t);localStorage.setItem('streak',s+1);tick();alert('Mission complete. Tomorrow, we do it again.');
+};
+if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js'));
+</script>
+</body>
+</html>

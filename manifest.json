@@ -1,0 +1,5 @@
+{
+"name":"9–6 Lock-In","short_name":"9–6 Lock-In","start_url":"./","display":"standalone",
+"background_color":"#f7f7f7","theme_color":"#111111","description":"A private 9 AM–6 PM self-control timer and streak app.",
+"icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
